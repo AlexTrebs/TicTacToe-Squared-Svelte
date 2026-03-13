@@ -1,19 +1,81 @@
 <script>
   import { gameStore } from '$lib/stores/gameStore.js';
-  // multiplayer: when ready, add startMultiplayerGame() and joinGame(sessionId) here
+  import { wsStore, connect } from '$lib/stores/wsStore.js';
+  import { createGame, joinGame } from '$lib/api/multiplayerApi.js';
+
+  let onlineView = null; // null | 'create' | 'join'
+  let joinCode = '';
+  let createdCode = '';
+  let error = '';
+  let copied = false;
+
+  function copyCode() {
+    navigator.clipboard.writeText(createdCode);
+    copied = true;
+    setTimeout(() => { copied = false; }, 2000);
+  }
+
+  function getUserId() {
+    let id = localStorage.getItem('userId');
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem('userId', id); }
+    return id;
+  }
+
+  async function handleCreate() {
+    error = '';
+    try {
+      const { code, token } = await createGame(getUserId());
+      createdCode = code;
+      onlineView = 'create';
+      connect(getUserId(), token);
+    } catch (e) {
+      error = e.message;
+    }
+  }
+
+  async function handleJoin() {
+    error = '';
+    try {
+      const { token } = await joinGame(getUserId(), joinCode.toUpperCase());
+      connect(getUserId(), token);
+    } catch (e) {
+      error = e.message;
+    }
+  }
 </script>
 
 <div class="start-menu">
-  <p class="start-description">
-    Two players take turns on the same device.<br>
-    Win three sub-boards in a row to win.
-  </p>
+  {#if onlineView === 'create'}
+    <p class="start-description">Share this code with your opponent:</p>
+    <div class="invite-code-row">
+      <p class="invite-code">{createdCode}</p>
+      <button class="copy-btn" on:click={copyCode}>{copied ? '✓' : 'Copy'}</button>
+    </div>
+    {#if $wsStore.status === 'waiting'}
+      <p class="start-description">Waiting for opponent…</p>
+    {/if}
 
-  <button class="start-btn" on:click={() => gameStore.startLocalGame()}>
-    Play local game
-  </button>
+  {:else if onlineView === 'join'}
+    <input
+      class="code-input"
+      bind:value={joinCode}
+      placeholder="Enter code"
+      maxlength="5"
+    />
+    <button class="start-btn" on:click={handleJoin}>Join game</button>
+    <button class="start-btn secondary" on:click={() => { onlineView = null; error = ''; }}>Back</button>
 
-  <!-- Multiplayer hooks — wire up when server is ready -->
-  <!-- <button class="start-btn secondary" disabled>Play online</button> -->
-  <!-- <input placeholder="Game ID" /> <button>Join</button> -->
+  {:else}
+    <p class="start-description">
+      Two players take turns on the same device.<br>
+      Win three sub-boards in a row to win.
+    </p>
+    <button class="start-btn" on:click={() => gameStore.startLocalGame()}>Play local</button>
+    <button class="start-btn" on:click={handleCreate}>Play online</button>
+    <button class="start-btn secondary" on:click={() => { onlineView = 'join'; error = ''; }}>Join game</button>
+  {/if}
+
+  {#if error}
+    <p class="start-error">{error}</p>
+  {/if}
 </div>

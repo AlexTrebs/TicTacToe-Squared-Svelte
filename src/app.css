@@ -333,6 +333,58 @@ body {
 }
 .start-btn:hover { opacity: 0.85; }
 
+.start-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.start-btn.secondary:hover { background: var(--surface2); opacity: 1; }
+
+.invite-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-code {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--text);
+}
+
+.copy-btn {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: 4px;
+  color: var(--dim);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.1s, border-color 0.1s;
+}
+.copy-btn:hover { color: var(--text); border-color: var(--text); }
+
+.code-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.code-input:focus { outline: none; border-color: var(--ring); }
+
+.start-error {
+  font-size: 11px;
+  color: #966060;
+}
+
 /* ── Game over ───────────────────────────────── */
 
 .game-over {

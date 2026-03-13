@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import calculateWinner from '../utils/calculateWinner.js';
 import { createMultiplayerActions } from './multiplayerActions.js';
 
@@ -36,7 +36,8 @@ const initialState = () => ({
 });
 
 function createGameStore() {
-  const { subscribe, update, set } = writable(initialState());
+  const _store = writable(initialState());
+  const { subscribe, update, set } = _store;
 
   // ── Local move ────────────────────────────────────────────────────────────
   // In multiplayer this is intercepted — send Move to server instead,
@@ -119,7 +120,23 @@ function createGameStore() {
 
   // ── Multiplayer actions ────────────────────────────────────────────────────
   const { applyServerMove, resign, offerDraw, acceptDraw, requestUndo, acceptUndo } =
-    createMultiplayerActions(update, undo);
+    createMultiplayerActions(update, undo, () => get(_store).isMultiplayer);
+
+  function setDrawOffered(by) {
+    update(state => ({ ...state, drawOffered: by }));
+  }
+
+  function setUndoRequested(by) {
+    update(state => ({ ...state, undoRequested: by }));
+  }
+
+  function applyGameOver(winnerMark) {
+    update(state => ({
+      ...state,
+      winner: winnerMark ?? null,
+      draw: winnerMark === null,
+    }));
+  }
 
   // ── Meta ───────────────────────────────────────────────────────────────────
   function togglePlayable(index) {
@@ -157,6 +174,10 @@ function createGameStore() {
     acceptDraw,
     requestUndo,
     acceptUndo,
+    // Multiplayer server events
+    setDrawOffered,
+    setUndoRequested,
+    applyGameOver,
     // Meta
     startLocalGame,
     startMultiplayerGame,
