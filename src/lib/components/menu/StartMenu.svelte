@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { gameStore } from '$lib/stores/gameStore.js';
   import { wsStore, connect } from '$lib/stores/wsStore.js';
   import { createGame, joinGame } from '$lib/api/multiplayerApi.js';
@@ -8,6 +9,11 @@
   let createdCode = '';
   let error = '';
   let copied = false;
+  let savedCode = '';
+
+  onMount(() => {
+    savedCode = localStorage.getItem('gameCode') || '';
+  });
 
   function copyCode() {
     navigator.clipboard.writeText(createdCode);
@@ -25,6 +31,7 @@
     error = '';
     try {
       const { code, token } = await createGame(getUserId());
+      localStorage.setItem('gameCode', code);
       createdCode = code;
       onlineView = 'create';
       connect(getUserId(), token);
@@ -36,10 +43,24 @@
   async function handleJoin() {
     error = '';
     try {
-      const { token } = await joinGame(getUserId(), joinCode.toUpperCase());
+      const code = joinCode.toUpperCase();
+      const { token } = await joinGame(getUserId(), code);
+      localStorage.setItem('gameCode', code);
       connect(getUserId(), token);
     } catch (e) {
       error = e.message;
+    }
+  }
+
+  async function handleRejoin() {
+    error = '';
+    try {
+      const { token } = await joinGame(getUserId(), savedCode);
+      connect(getUserId(), token);
+    } catch (e) {
+      error = e.message;
+      savedCode = '';
+      localStorage.removeItem('gameCode');
     }
   }
 </script>
@@ -73,6 +94,9 @@
     <button class="start-btn" on:click={() => gameStore.startLocalGame()}>Play local</button>
     <button class="start-btn" on:click={handleCreate}>Play online</button>
     <button class="start-btn secondary" on:click={() => { onlineView = 'join'; error = ''; }}>Join game</button>
+    {#if savedCode}
+      <button class="start-btn secondary" on:click={handleRejoin}>Rejoin game ({savedCode})</button>
+    {/if}
   {/if}
 
   {#if error}

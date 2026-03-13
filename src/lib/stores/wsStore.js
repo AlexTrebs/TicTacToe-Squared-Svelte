@@ -46,8 +46,17 @@ export function connect(userId, token) {
       case 'GameOver': {
         const mark = msg.winner ? userIdToMark(msg.winner) : null;
         gameStore.applyGameOver(mark);
+        localStorage.removeItem('gameCode');
         break;
       }
+
+      case 'GameRejoined':
+        _naughts = msg.naughts;
+        _crosses = msg.crosses;
+        wsStore.set({ status: 'playing', localMark: msg.crosses === _userId ? 'x' : 'o' });
+        gameStore.startMultiplayerGame();
+        gameStore.applyServerMove(msg);
+        break;
 
       case 'InvalidMove':
         snackbarStore.enqueueSnackbar(msg.reason, 'error');
