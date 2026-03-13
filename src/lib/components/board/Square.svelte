@@ -6,11 +6,13 @@
   export let squareCoord = '';
   export let onPlay = null;
   export let isPlayable = false;
+  export let throb = false;
 </script>
 
 {#if isPlayable}
   <button
     class="square-active"
+    class:square-throb={throb}
     on:click={() => onPlay && onPlay(squareCoord)}
   >
     <slot>
@@ -22,7 +24,7 @@
     </slot>
   </button>
 {:else}
-  <div class="square-inactive">
+  <div class="square-inactive" class:square-throb={throb}>
     <slot>
       {#if value === 'x'}
         <span class="icon icon-x"><IconX /></span>

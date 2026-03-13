@@ -135,6 +135,14 @@ body {
 }
 .square-active:hover { background: var(--cell-h); }
 
+@keyframes board-throb {
+  0%, 100% { box-shadow: 0 0 0 0px rgba(82, 120, 64, 0.1); }
+  50%       { box-shadow: 0 0 0 3px rgba(82, 120, 64, 0.85); }
+}
+.square-inactive.square-throb {
+  animation: board-throb 1.8s ease-in-out infinite;
+}
+
 .square-inactive {
   background: var(--dark-cell);
   border: none;

@@ -29,7 +29,7 @@
     if (allFree || isDeselecting) gameStore.togglePlayable(index);
   }
 
-  $: currentTurn = $gameStore.lastPlayedNoughts ? 'o' : 'x';
+  $: currentTurn = $gameStore.lastPlayedNoughts ? 'x' : 'o';
   $: myTurn = !$gameStore.isMultiplayer || $wsStore.localMark === currentTurn;
 </script>
 
@@ -45,6 +45,7 @@
           squareCoord="{sqNum}"
           onPlay={handleOuterSquareClick}
           isPlayable={$gameStore.isPlayable[sqNum] && !$gameStore.squaresWinner[sqNum] && $gameStore.gameStarted && myTurn}
+          throb={myTurn && $gameStore.gameStarted && !$gameStore.isPlayable[sqNum]}
         >
           <TicTacToe
             winner={$gameStore.squaresWinner[sqNum]}
