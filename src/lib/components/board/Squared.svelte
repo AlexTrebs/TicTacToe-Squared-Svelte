@@ -23,7 +23,10 @@
   }
 
   function handleOuterSquareClick(index) {
-    gameStore.togglePlayable(index);
+    const isPlayable = $gameStore.isPlayable;
+    const allFree = isPlayable.every(v => v);
+    const isDeselecting = !isPlayable[index];
+    if (allFree || isDeselecting) gameStore.togglePlayable(index);
   }
 
   $: currentTurn = $gameStore.lastPlayedNoughts ? 'o' : 'x';
